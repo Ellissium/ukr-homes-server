@@ -27,6 +27,7 @@ export class AuthService {
 			...tokens
 		}
 	}
+
 	async getNewTokens(refreshToken: string) {
 		const result = await this.jwtService.verifyAsync(refreshToken)
 		if (!result) throw new UnauthorizedException('invalid refresh token')
@@ -44,6 +45,7 @@ export class AuthService {
 			...tokens
 		}
 	}
+
 	async register(dto: AuthDto) {
 		const oldUser = await this.prismaService.user.findUnique({
 			where: {
@@ -99,7 +101,7 @@ export class AuthService {
 		if (!user) throw new NotFoundException('user not found')
 
 		const isValid = await verify(user.password, dto.password)
-
+		console.log(isValid)
 		if (!isValid) throw new UnauthorizedException('invalid password')
 
 		return user
