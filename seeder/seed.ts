@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { Post, PrismaClient } from '@prisma/client'
+import { Category, Post, PrismaClient } from '@prisma/client'
 import * as dotenv from 'dotenv'
 
 dotenv.config()
@@ -7,13 +7,13 @@ const prisma = new PrismaClient()
 
 const createProducts = async (quantity: number) => {
 	const posts: Post[] = []
-	const categoryName = 'RENT'
-	// const category: Category = await prisma.category.create({
-	// 	data: {
-	// 		name: categoryName,
-	// 		slug: faker.helpers.slugify(categoryName).toLowerCase()
-	// 	}
-	// })
+	const categoryName = 'REFUGEE'
+	const category: Category = await prisma.category.create({
+		data: {
+			name: categoryName,
+			slug: faker.helpers.slugify(categoryName).toLowerCase()
+		}
+	})
 	for (let i = 0; i < quantity; i++) {
 		const postName = faker.commerce.productName()
 
@@ -26,8 +26,8 @@ const createProducts = async (quantity: number) => {
 					length: faker.datatype.number({ min: 1, max: 5 })
 				}).map(() => faker.image.imageUrl()),
 				description: faker.commerce.productDescription(),
-				price: +faker.commerce.price(100, 99999, 0),
-				utilitiesPrice: +faker.commerce.price(1, 999, 0),
+				price: +faker.commerce.price(0, 0, 0),
+				utilitiesPrice: +faker.commerce.price(0, 0, 0),
 
 				region: 'Kherson',
 				city: 'Kherson',
@@ -43,7 +43,7 @@ const createProducts = async (quantity: number) => {
 				minRentalPeriod: faker.datatype.number({ min: 1, max: 24 }),
 
 				authorId: 1,
-				categoryId: 1,
+				categoryId: 3,
 				favoritedBy: {}
 			}
 		})
