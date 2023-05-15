@@ -10,6 +10,10 @@ export enum EnumPostSort {
 
 export class GetAllPostDto extends PaginationDto {
 	@IsOptional()
+	@IsString()
+	user?: string
+
+	@IsOptional()
 	@IsEnum(EnumPostSort)
 	sort?: string
 

@@ -24,5 +24,7 @@ export const userPostsObject: Prisma.PostSelect = {
 	bathroomsNumber: true,
 	floor: true,
 	area: true,
-	minRentalPeriod: true
+	minRentalPeriod: true,
+
+	category: true
 }

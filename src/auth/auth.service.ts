@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt/dist'
 import { User } from '@prisma/client'
 import { hash, verify } from 'argon2'
 import { PrismaService } from 'src/prisma.service'
-import { AuthDto } from './dto/auth.dto'
+import { LoginDto, RegisterDto } from './dto/auth.dto'
 
 @Injectable()
 export class AuthService {
@@ -18,7 +18,7 @@ export class AuthService {
 		private readonly jwtService: JwtService
 	) {}
 
-	async login(dto: AuthDto) {
+	async login(dto: LoginDto) {
 		const user = await this.validateUser(dto)
 		const tokens = await this.issueTokens(user.id)
 
@@ -46,7 +46,7 @@ export class AuthService {
 		}
 	}
 
-	async register(dto: AuthDto) {
+	async register(dto: RegisterDto) {
 		const oldUser = await this.prismaService.user.findUnique({
 			where: {
 				email: dto.email
@@ -58,7 +58,7 @@ export class AuthService {
 		const user = await this.prismaService.user.create({
 			data: {
 				email: dto.email,
-				name: faker.name.firstName(),
+				name: dto.name,
 				avatarPath: faker.image.avatar(),
 				phone: faker.phone.number('+38 ###-###-##-##'),
 				password: await hash(dto.password)
@@ -91,7 +91,7 @@ export class AuthService {
 		}
 	}
 
-	private async validateUser(dto: AuthDto) {
+	private async validateUser(dto: LoginDto) {
 		const user = await this.prismaService.user.findUnique({
 			where: {
 				email: dto.email

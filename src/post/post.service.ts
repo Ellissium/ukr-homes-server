@@ -16,7 +16,7 @@ export class PostService {
 	) {}
 
 	async getAll(dto: GetAllPostDto = {}) {
-		const { sort, searchTerm, category } = dto
+		const { user, sort, searchTerm, category } = dto
 
 		const prismaSort: Prisma.PostOrderByWithRelationInput[] = []
 
@@ -62,6 +62,14 @@ export class PostService {
 			  }
 			: {}
 
+		const prismaUserFilter: Prisma.PostWhereInput = user
+			? {
+					authorId: {
+						equals: +user
+					}
+			  }
+			: {}
+
 		const prismaCategoryFilter: Prisma.PostWhereInput = category
 			? {
 					category: {
@@ -77,7 +85,7 @@ export class PostService {
 
 		const posts = await this.prismaService.post.findMany({
 			where: {
-				AND: [prismaSearchTermFilter, prismaCategoryFilter]
+				AND: [prismaSearchTermFilter, prismaCategoryFilter, prismaUserFilter]
 			},
 			orderBy: prismaSort,
 			skip,
@@ -89,7 +97,7 @@ export class PostService {
 			posts,
 			length: await this.prismaService.post.count({
 				where: {
-					AND: [prismaSearchTermFilter, prismaCategoryFilter]
+					AND: [prismaSearchTermFilter, prismaCategoryFilter, prismaUserFilter]
 				}
 			})
 		}
