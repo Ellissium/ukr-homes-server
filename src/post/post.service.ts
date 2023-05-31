@@ -1,13 +1,12 @@
 import { faker } from '@faker-js/faker'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
+import slugify from 'slugify'
 import { PaginationService } from 'src/pagination/pagination.service'
 import { PrismaService } from 'src/prisma.service'
-import { generateSlug } from 'src/utils/generate-slug'
-import { EnumPostSort, GetAllPostDto } from './dto/get-all.post.dto'
+import { GetAllPostDto, PostSortEnum } from './dto/get-all.post.dto'
 import { PostDto } from './dto/post.dto'
 import { returnPostObject } from './return-post.object'
-
 @Injectable()
 export class PostService {
 	constructor(
@@ -16,18 +15,38 @@ export class PostService {
 	) {}
 
 	async getAll(dto: GetAllPostDto = {}) {
-		const { user, sort, searchTerm, category } = dto
+		const {
+			user,
+			sort,
+			searchTerm,
+			category,
+			minPrice,
+			maxPrice,
+			minArea,
+			maxArea,
+			minFloor,
+			maxFloor,
+			minRooms,
+			maxRooms,
+			minRent,
+			maxRent,
+			minBeds,
+			maxBeds,
+			minBathRooms,
+			maxBathRooms,
+			region
+		} = dto
 
 		const prismaSort: Prisma.PostOrderByWithRelationInput[] = []
 
 		switch (sort) {
-			case EnumPostSort.LOW_PRICE:
+			case PostSortEnum.find(item => item.key === 'LOW_PRICE')?.key:
 				prismaSort.push({ price: 'asc' })
 				break
-			case EnumPostSort.HIGH_PRICE:
+			case PostSortEnum.find(item => item.key === 'HIGH_PRICE')?.key:
 				prismaSort.push({ price: 'desc' })
 				break
-			case EnumPostSort.OLDEST:
+			case PostSortEnum.find(item => item.key === 'OLDEST')?.key:
 				prismaSort.push({ createdAt: 'asc' })
 				break
 			default:
@@ -70,6 +89,128 @@ export class PostService {
 			  }
 			: {}
 
+		const prismaRegionFilter: Prisma.PostWhereInput =
+			region !== undefined && region !== 'ALL'
+				? {
+						region: {
+							equals: region,
+							mode: 'insensitive'
+						}
+				  }
+				: {}
+
+		const prismaPriceFilter: Prisma.PostWhereInput = {}
+		if (minPrice !== undefined && maxPrice !== undefined) {
+			prismaPriceFilter.price = {
+				gte: +minPrice,
+				lte: +maxPrice
+			}
+		} else if (minPrice !== undefined) {
+			prismaPriceFilter.price = {
+				gte: +minPrice
+			}
+		} else if (maxPrice !== undefined) {
+			prismaPriceFilter.price = {
+				lte: +maxPrice
+			}
+		}
+
+		const prismaAreaFilter: Prisma.PostWhereInput = {}
+		if (minArea !== undefined && maxArea !== undefined) {
+			prismaAreaFilter.area = {
+				gte: +minArea,
+				lte: +maxArea
+			}
+		} else if (minArea !== undefined) {
+			prismaAreaFilter.area = {
+				gte: +minArea
+			}
+		} else if (maxArea !== undefined) {
+			prismaAreaFilter.area = {
+				lte: +maxArea
+			}
+		}
+
+		const prismaFloorFilter: Prisma.PostWhereInput = {}
+		if (minFloor !== undefined && maxFloor !== undefined) {
+			prismaFloorFilter.floor = {
+				gte: +minFloor,
+				lte: +maxFloor
+			}
+		} else if (minFloor !== undefined) {
+			prismaFloorFilter.floor = {
+				gte: +minFloor
+			}
+		} else if (maxFloor !== undefined) {
+			prismaFloorFilter.floor = {
+				lte: +maxFloor
+			}
+		}
+
+		const prismaRoomsFilter: Prisma.PostWhereInput = {}
+		if (minRooms !== undefined && maxRooms !== undefined) {
+			prismaRoomsFilter.roomsNumber = {
+				gte: +minRooms,
+				lte: +maxRooms
+			}
+		} else if (minRooms !== undefined) {
+			prismaRoomsFilter.roomsNumber = {
+				gte: +minRooms
+			}
+		} else if (maxRooms !== undefined) {
+			prismaRoomsFilter.roomsNumber = {
+				lte: +maxRooms
+			}
+		}
+
+		const prismaRentFilter: Prisma.PostWhereInput = {}
+		if (minRent !== undefined && maxRent !== undefined) {
+			prismaRentFilter.minRentalPeriod = {
+				gte: +minRent,
+				lte: +maxRent
+			}
+		} else if (minRent !== undefined) {
+			prismaRentFilter.minRentalPeriod = {
+				gte: +minRent
+			}
+		} else if (maxRent !== undefined) {
+			prismaRentFilter.minRentalPeriod = {
+				lte: +maxRent
+			}
+		}
+
+		const prismaBedsFilter: Prisma.PostWhereInput = {}
+		if (minBeds !== undefined && maxBeds !== undefined) {
+			prismaBedsFilter.bedsNumber = {
+				gte: +minBeds,
+				lte: +maxBeds
+			}
+		} else if (minBeds !== undefined) {
+			prismaBedsFilter.bedsNumber = {
+				gte: +minBeds
+			}
+		} else if (maxBeds !== undefined) {
+			prismaBedsFilter.bedsNumber = {
+				lte: +maxBeds
+			}
+		}
+
+		const prismaBathRoomsFilter: Prisma.PostWhereInput = {}
+		if (minBathRooms !== undefined && maxBathRooms !== undefined) {
+			prismaBathRoomsFilter.bathroomsNumber = {
+				gte: +minBathRooms,
+				lte: +maxBathRooms
+			}
+		} else if (minBathRooms !== undefined) {
+			prismaBathRoomsFilter.bathroomsNumber = {
+				gte: +minBathRooms
+			}
+		} else if (maxBathRooms !== undefined) {
+			prismaBathRoomsFilter.bathroomsNumber = {
+				lte: +maxBathRooms
+			}
+		}
+
 		const prismaCategoryFilter: Prisma.PostWhereInput = category
 			? {
 					category: {
@@ -85,7 +226,19 @@ export class PostService {
 
 		const posts = await this.prismaService.post.findMany({
 			where: {
-				AND: [prismaSearchTermFilter, prismaCategoryFilter, prismaUserFilter]
+				AND: [
+					prismaSearchTermFilter,
+					prismaCategoryFilter,
+					prismaUserFilter,
+					prismaPriceFilter,
+					prismaAreaFilter,
+					prismaFloorFilter,
+					prismaRoomsFilter,
+					prismaRentFilter,
+					prismaBedsFilter,
+					prismaBathRoomsFilter,
+					prismaRegionFilter
+				]
 			},
 			orderBy: prismaSort,
 			skip,
@@ -97,23 +250,51 @@ export class PostService {
 			posts,
 			length: await this.prismaService.post.count({
 				where: {
-					AND: [prismaSearchTermFilter, prismaCategoryFilter, prismaUserFilter]
+					AND: [
+						prismaSearchTermFilter,
+						prismaCategoryFilter,
+						prismaUserFilter,
+						prismaPriceFilter,
+						prismaAreaFilter,
+						prismaFloorFilter,
+						prismaRoomsFilter,
+						prismaRentFilter,
+						prismaBedsFilter,
+						prismaBathRoomsFilter,
+						prismaRegionFilter
+					]
 				}
 			})
 		}
 	}
 
-	async byId(id: number) {
-		const post = await this.prismaService.post.findUnique({
+	async byId(userId: number, postId: number) {
+		console.log(userId)
+		const postExists = await this.prismaService.post.findFirst({
 			where: {
-				id
-			},
-			select: returnPostObject
+				id: postId,
+				authorId: userId
+			}
 		})
+		if (postExists) {
+			const post = await this.prismaService.post.findUnique({
+				where: {
+					id: postId
+				},
+				select: returnPostObject
+			})
+			return post
+		} else {
+			throw new NotFoundException('Post not found')
+		}
+		// const post = await this.prismaService.post.findUnique({
+		// 	where: { id, authorId: userId },
+		// 	select: returnPostObject
+		// })
 
-		if (!post) throw new NotFoundException('Post not found')
+		// if (!post)
 
-		return post
+		// return post
 	}
 
 	async bySlug(slug: string) {
@@ -144,8 +325,8 @@ export class PostService {
 		return post
 	}
 
-	async getSimilar(id: number) {
-		const currentPost = await this.byId(id)
+	async getSimilar(userId: number, id: number) {
+		const currentPost = await this.byId(userId, id)
 
 		if (!currentPost) throw new NotFoundException('Current post not found')
 
@@ -169,41 +350,41 @@ export class PostService {
 		return posts
 	}
 
-	async create() {
+	async create(dto: PostDto, paths: string[]) {
 		const postName = faker.commerce.productName()
+		const slug = slugify(dto.name, { lower: true })
+		const uniqueSlug = `${slug}-${Date.now()}`
 		return this.prismaService.post.create({
 			data: {
 				activity: true,
-				name: postName,
-				slug: faker.helpers.slugify(postName).toLowerCase(),
-				images: Array.from({
-					length: faker.datatype.number({ min: 1, max: 5 })
-				}).map(() => faker.image.imageUrl()),
-				description: faker.commerce.productDescription(),
-				price: +faker.commerce.price(100, 99999, 0),
-				utilitiesPrice: +faker.commerce.price(1, 999, 0),
+				name: dto.name,
+				slug: uniqueSlug,
+				images: paths,
+				description: dto.description,
+				price: +dto.price,
+				utilitiesPrice: +dto.utilitiesPrice,
 
-				region: 'Kherson',
-				city: 'Kherson',
-				street: 'Khersonska',
-				houseNumber: '1',
-				mapCoordinates: 'some coordinates',
+				region: dto.region,
+				city: dto.city,
+				street: dto.street,
+				houseNumber: dto.houseNumber,
+				mapCoordinates: dto.mapCoordinates,
 
-				roomsNumber: faker.datatype.number({ min: 1, max: 5 }),
-				bedsNumber: faker.datatype.number({ min: 1, max: 10 }),
-				bathroomsNumber: faker.datatype.number({ min: 1, max: 2 }),
-				floor: faker.datatype.number({ min: 1, max: 50 }),
-				area: faker.datatype.number({ min: 50, max: 100 }),
-				minRentalPeriod: faker.datatype.number({ min: 1, max: 24 }),
+				roomsNumber: +dto.roomsNumber,
+				bedsNumber: +dto.bedsNumber,
+				bathroomsNumber: +dto.bathroomsNumber,
+				floor: +dto.floor,
+				area: +dto.area,
+				minRentalPeriod: +dto.minRentalPeriod,
 
-				authorId: 1,
-				categoryId: 1,
+				authorId: +dto.authorId,
+				categoryId: +dto.categoryId,
 				favoritedBy: {}
 			}
 		})
 	}
 
-	async update(id: number, dto: PostDto) {
+	async update(id: number, dto: PostDto, paths: string[]) {
 		const {
 			activity,
 			name,
@@ -225,39 +406,33 @@ export class PostService {
 			categoryId,
 			authorId
 		} = dto
+		const slug = slugify(dto.name, { lower: true })
+		const uniqueSlug = `${slug}-${Date.now()}`
 		return this.prismaService.post.update({
 			where: {
 				id
 			},
 			data: {
-				activity,
+				activity: true,
 				name,
-				images,
+				images: paths,
 				description,
-				price,
-				utilitiesPrice,
+				price: +price,
+				utilitiesPrice: +utilitiesPrice,
 				region,
 				city,
 				street,
 				houseNumber,
 				mapCoordinates,
-				roomsNumber,
-				bedsNumber,
-				bathroomsNumber,
-				floor,
-				area,
-				minRentalPeriod,
-				slug: generateSlug(dto.name),
-				category: {
-					connect: {
-						id: categoryId
-					}
-				},
-				author: {
-					connect: {
-						id: authorId
-					}
-				}
+				roomsNumber: +roomsNumber,
+				bedsNumber: +bedsNumber,
+				bathroomsNumber: +bathroomsNumber,
+				floor: +floor,
+				area: +area,
+				minRentalPeriod: +minRentalPeriod,
+				slug: uniqueSlug,
+				categoryId: +categoryId,
+				authorId: +authorId
 			}
 		})
 	}

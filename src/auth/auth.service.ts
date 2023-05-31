@@ -1,4 +1,3 @@
-import { faker } from '@faker-js/faker'
 import {
 	BadRequestException,
 	Injectable,
@@ -59,8 +58,8 @@ export class AuthService {
 			data: {
 				email: dto.email,
 				name: dto.name,
-				avatarPath: faker.image.avatar(),
-				phone: faker.phone.number('+38 ###-###-##-##'),
+				avatarPath: `http://localhost:4200/api/files/avatar.png`,
+				phone: 'Додайте ваш номер телефону',
 				password: await hash(dto.password)
 			}
 		})

@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsNumber, IsString, Min } from 'class-validator'
+import { IsArray, IsBoolean, IsString } from 'class-validator'
 
 export class PostDto {
 	@IsBoolean()
@@ -13,11 +13,11 @@ export class PostDto {
 	@IsString()
 	description: string
 
-	@IsNumber()
-	price: number
+	@IsString()
+	price: string
 
-	@IsNumber()
-	utilitiesPrice: number
+	@IsString()
+	utilitiesPrice: string
 
 	@IsString()
 	region: string
@@ -34,28 +34,27 @@ export class PostDto {
 	@IsString()
 	mapCoordinates: string
 
-	@IsNumber()
-	roomsNumber: number
+	@IsString()
+	roomsNumber: string
 
-	@IsNumber()
-	bedsNumber: number
+	@IsString()
+	bedsNumber: string
 
-	@IsNumber()
-	bathroomsNumber: number
+	@IsString()
+	bathroomsNumber: string
 
-	@IsNumber()
-	floor: number
+	@IsString()
+	floor: string
 
-	@IsNumber()
-	area: number
+	@IsString()
+	area: string
 
-	@IsNumber()
-	@Min(1)
-	minRentalPeriod: number
+	@IsString()
+	minRentalPeriod: string
 
-	@IsNumber()
-	categoryId: number
+	@IsString()
+	categoryId: string
 
-	@IsNumber()
-	authorId: number
+	@IsString()
+	authorId: string
 }
