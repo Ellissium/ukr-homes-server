@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 
 const createProducts = async (quantity: number) => {
 	const posts: Post[] = []
-	const categoryName = 'REFUGEE'
+	const categoryName = 'SALE'
 	const category: Category = await prisma.category.create({
 		data: {
 			name: categoryName,
@@ -43,7 +43,7 @@ const createProducts = async (quantity: number) => {
 				minRentalPeriod: faker.datatype.number({ min: 1, max: 24 }),
 
 				authorId: 1,
-				categoryId: 3,
+				categoryId: 2,
 				favoritedBy: {}
 			}
 		})
@@ -55,7 +55,7 @@ const createProducts = async (quantity: number) => {
 
 async function main() {
 	console.log('Start seeding ...')
-	await createProducts(10)
+	await createProducts(1)
 }
 
 main()
