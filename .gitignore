@@ -41,3 +41,5 @@ node_modules
 
 # Ignore package-lock.json file
 package-lock.json
+
+/uploads
