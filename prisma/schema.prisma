@@ -36,7 +36,7 @@ model Post {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   activity       Boolean  @default(true)
-  name           String   @unique
+  name           String
   slug           String   @unique
   images         String[]
   description    String
