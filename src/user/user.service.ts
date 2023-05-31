@@ -39,7 +39,7 @@ export class UserService {
 		return user
 	}
 
-	async updateProfile(id: number, dto: UserDto) {
+	async updateProfile(id: number, dto: UserDto, filePaths?: string[]) {
 		const isSameUser = await this.prismaService.user.findUnique({
 			where: {
 				email: dto.email
@@ -58,7 +58,7 @@ export class UserService {
 			data: {
 				email: dto.email,
 				name: dto.name,
-				avatarPath: dto.avatarPath,
+				avatarPath: filePaths[0],
 				phone: dto.phone,
 				password: dto.password ? await hash(dto.password) : user.password
 			}

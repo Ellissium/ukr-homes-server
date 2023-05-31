@@ -3,15 +3,18 @@ import {
 	Controller,
 	Get,
 	HttpCode,
+	HttpException,
+	HttpStatus,
 	Param,
 	Patch,
 	Put,
+	UploadedFiles,
 	UsePipes,
 	ValidationPipe
 } from '@nestjs/common'
 import { Auth } from 'src/auth/decorators/auth.decorator'
 import { CurrentUser } from 'src/auth/decorators/user.decorator'
-import { UserDto } from './dto/user.dto'
+import { FileUpload } from 'src/post/decorators/fileUpload.decorator'
 import { UserService } from './user.service'
 
 @Controller('users')
@@ -28,8 +31,39 @@ export class UserController {
 	@HttpCode(200)
 	@Auth()
 	@Put('profile')
-	async updateProfile(@CurrentUser('id') id: number, @Body() dto: UserDto) {
-		return this.userService.updateProfile(id, dto)
+	@FileUpload('avatarPath')
+	async updateProfile(
+		@CurrentUser('id') id: number,
+		@Body() formData,
+		@UploadedFiles() paths: Express.Multer.File[]
+	) {
+		try {
+			let filePaths = []
+			if (paths) {
+				filePaths = await Promise.all(
+					paths.map(async file => {
+						const filePath =
+							`http://localhost:4200/api/files/${file.filename}`.replace(
+								/\\/g,
+								'/'
+							)
+						console.log(filePath)
+						return filePath
+					})
+				)
+
+				console.log(filePaths)
+			} else {
+				console.log('Файли не були завантажені')
+			}
+			return this.userService.updateProfile(id, formData, filePaths)
+		} catch (error) {
+			console.error(error)
+			throw new HttpException(
+				'Помилка серверу',
+				HttpStatus.INTERNAL_SERVER_ERROR
+			)
+		}
 	}
 
 	@HttpCode(200)
